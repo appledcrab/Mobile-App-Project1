@@ -1,3 +1,5 @@
+// import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,6 +11,15 @@ class JournalEntryScreen extends StatefulWidget {
 class _JournalEntryScreenState extends State<JournalEntryScreen> {
   String _formattedDate = DateFormat('MMMM dd, yyyy').format(DateTime.now());
   String _formattedTime = DateFormat('h:mm a').format(DateTime.now());
+
+  TextEditingController _textEditingController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    _textEditingController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,30 +33,76 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _formattedDate,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              _formattedTime,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Container(
+              width: double.infinity,
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          _formattedDate,
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          _formattedTime,
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    '😊', // --- CHANGE to the other moods we have... not sure how yet
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 100, // Lines displayed
-                itemBuilder: (context, index) {
-                  return TextField(
-                    decoration: InputDecoration(
-                      hintText: index == 0 ? 'Start typing...' : '',
-                      border: InputBorder.none,
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.brown, width: 0.5),
-                      ),
+            SizedBox(
+              height: 340,
+              child: Container(
+                width: double.infinity,
+                constraints:
+                    BoxConstraints(maxWidth: MediaQuery.of(context).size.width),
+                child: TextField(
+                  controller: _textEditingController,
+                  decoration: InputDecoration(
+                    hintText: 'Start typing...',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: null,
+                  maxLength: 500,
+                ),
+              ),
+            ),
+            Center(
+              child: SizedBox(
+                width: 200, //button sizing
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    String enteredText = _textEditingController.text;
+                    print(
+                        //going to use this when making the entry class and the entries.
+                        'Entered text: $enteredText\n on $_formattedDate at $_formattedTime\n with the emotion 😊 ');
+                    //(isnt done with other mood widget yet)
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  child: Text(
+                    'Save',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                    maxLines: 1,
-                  );
-                },
+                  ),
+                ),
               ),
             ),
           ],
@@ -54,6 +111,8 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // will add functions when clicked
+          //maybe changing emoji here
+          //adding a photo onto this entry
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.green,
