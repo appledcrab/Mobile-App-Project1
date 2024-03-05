@@ -23,8 +23,3 @@ class EmojiIcon {
     }
   }
 }
-// Icons.sentiment_very_dissatisfied, 'Very Sad'),
-//               MoodIcon(Icons.sentiment_dissatisfied, 'Sad'),
-//               MoodIcon(Icons.sentiment_neutral, 'Neutral'),
-//               MoodIcon(Icons.sentiment_satisfied, 'Happy'),
-//               MoodIcon(Icons.sentiment_very_satisfied, 'Very Happy'),

@@ -1,34 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../database_helper.dart';
 import '../entry_class.dart';
 import '../emoji_icon_class.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'dart:typed_data';
 
-class JournalEntryScreen extends StatefulWidget {
-  final String selectedMood;
+class EditEntryScreen extends StatefulWidget {
+  final JournalEntry entry;
 
-  JournalEntryScreen({Key? key, required this.selectedMood}) : super(key: key);
+  EditEntryScreen({required this.entry});
 
   @override
-  _JournalEntryScreenState createState() => _JournalEntryScreenState();
+  _EditEntryScreenState createState() => _EditEntryScreenState();
 }
 
-class _JournalEntryScreenState extends State<JournalEntryScreen> {
-  final dbHelper = DatabaseHelper();
-  String _formattedDate = DateFormat('MMMM dd, yyyy').format(DateTime.now());
-  String _formattedTime = DateFormat('h:mm a').format(DateTime.now());
-  TextEditingController _textEditingController = TextEditingController();
+class _EditEntryScreenState extends State<EditEntryScreen> {
+  late String _formattedDate;
+  late String _formattedTime;
+  late TextEditingController _textEditingController;
   late String _selectedMood;
-  late EmojiIcon moodIcon;
-  File? _image; // Variable to store the selected image
+  late EmojiIcon _moodIcon;
+  final dbHelper = DatabaseHelper();
+  late Uint8List? _imageData; // Nullable Uint8List for storing image data
 
   @override
   void initState() {
     super.initState();
-    _selectedMood = widget.selectedMood;
-    moodIcon = EmojiIcon(label: _selectedMood);
+    _formattedDate = widget.entry.date;
+    _formattedTime = widget.entry.time;
+    _textEditingController = TextEditingController(text: widget.entry.body);
+    _selectedMood = widget.entry.moodLabel;
+    _moodIcon = EmojiIcon(label: _selectedMood);
+    _imageData = widget.entry.imageData;
   }
 
   @override
@@ -41,7 +46,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('New Journal Entry'),
+        title: Text('Edit Entry'),
         backgroundColor: Colors.green[300],
       ),
       body: SingleChildScrollView(
@@ -74,50 +79,40 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                       _showMoodPicker(context);
                     },
                     child: Icon(
-                      moodIcon.icon,
+                      _moodIcon.icon,
                       size: 50,
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+
               SizedBox(
-                height: 100,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 10),
-                    Container(
-                      width: double.infinity,
-                      constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width),
-                      child: TextField(
-                        controller: _textEditingController,
-                        decoration: InputDecoration(
-                          hintText: 'Start typing...',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: null,
-                        maxLength: 250,
-                      ),
+                height: 340,
+                child: Container(
+                  width: double.infinity,
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width),
+                  child: TextField(
+                    controller: _textEditingController,
+                    decoration: InputDecoration(
+                      hintText: 'Start typing...',
+                      border: OutlineInputBorder(),
                     ),
-                  ],
+                    maxLines: null,
+                    maxLength: 500,
+                  ),
                 ),
               ),
-              SizedBox(height: 20), // Add space between text field and button
-              Center(
-                child: Column(
-                  children: [
-                    if (_image != null)
-                      Image.file(_image!), // Display the selected image
-                    ElevatedButton(
-                      onPressed: _getImage,
-                      child: Text('Pick Image'),
-                    ),
-                  ],
-                ),
-              ),
+              // Display image widget
               SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _getImage,
+                  child: Text('Pick Image'),
+                ),
+              ),
+
+              SizedBox(height: 30),
               Center(
                 child: SizedBox(
                   width: 200,
@@ -125,15 +120,15 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                   child: ElevatedButton(
                     onPressed: () async {
                       String enteredText = _textEditingController.text;
-                      JournalEntry entry = JournalEntry(
+                      JournalEntry updatedEntry = JournalEntry(
+                        id: widget.entry.id,
                         date: _formattedDate,
                         time: _formattedTime,
                         body: enteredText,
                         moodLabel: _selectedMood,
-                        imageData:
-                            _image != null ? await _image!.readAsBytes() : null,
+                        imageData: _imageData, // Assign image data
                       );
-                      dbHelper.insertEntry(entry);
+                      await dbHelper.updateEntry(updatedEntry);
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
@@ -150,14 +145,19 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                   ),
                 ),
               ),
+              SizedBox(height: 20),
+              _buildImageWidget(),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
-        backgroundColor: Colors.green,
+        onPressed: () async {
+          await dbHelper.deleteEntry(widget.entry.id!);
+          Navigator.pop(context);
+        },
+        child: Icon(Icons.delete),
+        backgroundColor: Colors.red,
       ),
     );
   }
@@ -189,7 +189,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
       onTap: () {
         setState(() {
           _selectedMood = emoji.label;
-          moodIcon = emoji;
+          _moodIcon = emoji;
         });
         Navigator.of(context).pop();
       },
@@ -203,13 +203,26 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
     );
   }
 
-  // Method to pick an image from the device
+  Widget _buildImageWidget() {
+    if (_imageData != null) {
+      return Image.memory(
+        _imageData!,
+        height: 400,
+        width: 400,
+        fit: BoxFit.cover,
+      );
+    } else {
+      return SizedBox.shrink();
+    }
+  }
+
   Future<void> _getImage() async {
     final pickedFile = await ImagePicker()
         .pickImage(source: ImageSource.gallery); // Pick image from gallery
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path); // Set the selected image file
+        _imageData = File(pickedFile.path)
+            .readAsBytesSync(); // Set the selected image file
       });
     }
   }

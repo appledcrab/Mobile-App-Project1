@@ -4,29 +4,78 @@ import '../entry_class.dart';
 import 'package:intl/intl.dart';
 import '../emoji_icon_class.dart';
 
-class MoodTrackerScreen extends StatelessWidget {
-  List<JournalEntry> entrys = [
-    //currently using a list of journal entries for demonstration purposes, will be replaced with Entries from the input.
-    //only using current time for these for demonstration purposes
-    JournalEntry(
-      date: DateFormat('MMMM dd, yyyy').format(DateTime.now()),
-      time: DateFormat('h:mm a').format(DateTime.now()),
-      body: "Yippie!",
-      mood: EmojiIcon(label: "Very Happy"),
-    ),
-    JournalEntry(
-      date: DateFormat('MMMM dd, yyyy').format(DateTime.now()),
-      time: DateFormat('h:mm a').format(DateTime.now()),
-      body: "oooh oh no ok ",
-      mood: EmojiIcon(label: "Sad"),
-    ),
-    JournalEntry(
-      date: DateFormat('MMMM dd, yyyy').format(DateTime.now()),
-      time: DateFormat('h:mm a').format(DateTime.now()),
-      body: "AHHHHH",
-      mood: EmojiIcon(label: "Very Sad"),
-    ),
-  ];
+import '../database_helper.dart';
+import 'journal_entry_screen.dart';
+import 'edit_entry_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class MoodTrackerScreen extends StatefulWidget {
+  @override
+  _MoodTrackerScreenState createState() => _MoodTrackerScreenState();
+}
+
+class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
+  List<JournalEntry> entries = [];
+  DatabaseHelper dbHelper = DatabaseHelper();
+  late SharedPreferences _prefs;
+  late String _userName;
+
+  @override
+  void initState() {
+    super.initState();
+    _initPrefs();
+    _fetchEntries();
+  }
+
+  Future<void> _fetchEntries() async {
+    final fetchedEntries = await dbHelper.getEntries();
+    setState(() {
+      entries = fetchedEntries.reversed
+          .toList(); // reversing the list to be in order of most recent first
+    });
+  }
+
+  Future<void> _initPrefs() async {
+    _prefs = await SharedPreferences.getInstance();
+    _userName = _prefs.getString('userName') ?? '';
+    if (_userName.isEmpty) {
+      _showNameDialog();
+    }
+  }
+
+  Future<void> _showNameDialog() async {
+    String? newName = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Enter your name'),
+        content: TextField(
+          onChanged: (value) {
+            setState(() {
+              _userName = value;
+            });
+          },
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, _userName);
+            },
+            child: Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (newName != null) {
+      _prefs.setString('userName', newName);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +88,7 @@ class MoodTrackerScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              'Good morning YourName!',
+              'Good morning $_userName!', //see if we can change the greeting based on time of day
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ),
@@ -59,19 +108,55 @@ class MoodTrackerScreen extends StatelessWidget {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: entrys.length,
+              itemCount: entries.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(entrys[index].date + " " + entrys[index].time),
-                  subtitle: Text(entrys[index].body),
-                  trailing: Icon(entrys[index].mood.icon),
+                EmojiIcon moodIcon = EmojiIcon(label: entries[index].moodLabel);
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EditEntryScreen(entry: entries[index]),
+                      ),
+                    ).then((_) => _fetchEntries());
+                  },
+                  child: ListTile(
+                    title:
+                        Text(entries[index].date + " " + entries[index].time),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          entries[index].body.length > 50
+                              ? '${entries[index].body.substring(0, 50)}...' // Limiting characters to 50
+                              : entries[index].body,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        if (entries[index].imageData != null)
+                          Image.memory(
+                            entries[index].imageData!,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                      ],
+                    ),
+                    trailing: Icon(moodIcon.icon),
+                  ),
                 );
               },
             ),
           ),
           FloatingActionButton(
             onPressed: () {
-              // will add functions when clicked
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      JournalEntryScreen(selectedMood: "Neutral"),
+                ),
+              ).then((_) => _fetchEntries());
             },
             child: Icon(Icons.add),
             backgroundColor: Colors.green,
@@ -88,7 +173,12 @@ class MoodTrackerScreen extends StatelessWidget {
           icon: Icon(icon),
           iconSize: 36,
           onPressed: () {
-            // will add functions when clicked
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => JournalEntryScreen(selectedMood: label),
+              ),
+            ).then((_) => _fetchEntries());
           },
         ),
         Text(label),
@@ -96,5 +186,3 @@ class MoodTrackerScreen extends StatelessWidget {
     );
   }
 }
-
-void main() => runApp(MaterialApp(home: MoodTrackerScreen()));
