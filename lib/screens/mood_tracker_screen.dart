@@ -75,6 +75,16 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
       _prefs.setString('userName', newName);
     }
   }
+  String getGreeting() {
+    var hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Good morning';
+    } else if (hour < 17) {
+      return 'Good afternoon';
+    } else {
+      return 'Good evening';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,13 +98,14 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              'Good morning $_userName!', //see if we can change the greeting based on time of day
+              '${getGreeting()} $_userName!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
+
           ),
           Text(
             'How are you feeling today?',
-            style: TextStyle(fontSize: 18),
+            style: TextStyle(fontSize: 20),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
