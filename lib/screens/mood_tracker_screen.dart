@@ -75,6 +75,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
       _prefs.setString('userName', newName);
     }
   }
+
   String getGreeting() {
     var hour = DateTime.now().hour;
     if (hour < 12) {
@@ -101,7 +102,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
               '${getGreeting()} $_userName!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-
           ),
           Text(
             'How are you feeling today?',
@@ -117,6 +117,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
               MoodIcon(Icons.sentiment_very_satisfied, 'Very Happy'),
             ],
           ),
+          SizedBox(height: 30),
           Expanded(
             child: ListView.builder(
               itemCount: entries.length,

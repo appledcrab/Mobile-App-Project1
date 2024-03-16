@@ -87,24 +87,26 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
               ),
 
               SizedBox(
-                height: 340,
-                child: Container(
-                  width: double.infinity,
-                  constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width),
-                  child: TextField(
-                    controller: _textEditingController,
-                    decoration: InputDecoration(
-                      hintText: 'Start typing...',
-                      border: OutlineInputBorder(),
+                height: 200,
+                child: SingleChildScrollView(
+                  child: Container(
+                    width: double.infinity,
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width),
+                    child: TextField(
+                      controller: _textEditingController,
+                      decoration: InputDecoration(
+                        hintText: 'Start typing...',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLength: 250,
                     ),
-                    maxLines: null,
-                    maxLength: 500,
                   ),
                 ),
               ),
               // Display image widget
-              SizedBox(height: 20),
+              SizedBox(height: 30),
+              _buildImageWidget(),
               Center(
                 child: ElevatedButton(
                   onPressed: _getImage,
@@ -112,7 +114,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                 ),
               ),
 
-              SizedBox(height: 30),
+              SizedBox(height: 20),
               Center(
                 child: SizedBox(
                   width: 200,
@@ -145,8 +147,6 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              _buildImageWidget(),
             ],
           ),
         ),
@@ -207,8 +207,6 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     if (_imageData != null) {
       return Image.memory(
         _imageData!,
-        height: 400,
-        width: 400,
         fit: BoxFit.cover,
       );
     } else {

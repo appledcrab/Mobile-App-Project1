@@ -81,12 +81,10 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                 ],
               ),
               SizedBox(height: 20),
-              SizedBox(
-                height: 100,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Container(
+                height: 200, // Specify a fixed height for the text entry box
+                child: ListView(
                   children: [
-                    SizedBox(height: 10),
                     Container(
                       width: double.infinity,
                       constraints: BoxConstraints(
@@ -104,7 +102,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 20), // Add space between text field and button
+              SizedBox(height: 20),
               Center(
                 child: Column(
                   children: [
