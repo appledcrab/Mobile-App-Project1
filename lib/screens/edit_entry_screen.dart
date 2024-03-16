@@ -49,6 +49,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
         title: Text('Edit Entry'),
         backgroundColor: Colors.green[300],
       ),
+      backgroundColor: Color.fromARGB(255, 254, 231, 192),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -99,6 +100,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                         hintText: 'Start typing...',
                         border: OutlineInputBorder(),
                       ),
+                      maxLines: null,
                       maxLength: 250,
                     ),
                   ),

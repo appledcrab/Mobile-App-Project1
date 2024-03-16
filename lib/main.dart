@@ -14,13 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false, //to not show the banner
       title: 'Journal App',
-      initialRoute: '/',
-      routes: {
-        '/': (context) => HomeScreen(),
-        '/mood': (context) =>
-            MoodTrackerScreen(), //main part, might change it to defaultly go there
-        '/photo': (context) => PhotoUploadScreen(),
-      },
+      home: MoodTrackerScreen(),
     );
   }
 }

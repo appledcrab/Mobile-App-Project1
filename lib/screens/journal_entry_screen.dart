@@ -44,6 +44,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
         title: Text('New Journal Entry'),
         backgroundColor: Colors.green[300],
       ),
+      backgroundColor: Color.fromARGB(255, 254, 231, 192),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -151,11 +152,6 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
-        backgroundColor: Colors.green,
       ),
     );
   }
