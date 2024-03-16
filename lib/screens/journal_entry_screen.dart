@@ -44,6 +44,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
         title: Text('New Journal Entry'),
         backgroundColor: Colors.green[300],
       ),
+      backgroundColor: Color.fromARGB(255, 254, 231, 192),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -81,12 +82,10 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                 ],
               ),
               SizedBox(height: 20),
-              SizedBox(
-                height: 100,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Container(
+                height: 200, // Specify a fixed height for the text entry box
+                child: ListView(
                   children: [
-                    SizedBox(height: 10),
                     Container(
                       width: double.infinity,
                       constraints: BoxConstraints(
@@ -104,7 +103,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 20), // Add space between text field and button
+              SizedBox(height: 20),
               Center(
                 child: Column(
                   children: [
@@ -153,11 +152,6 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
-        backgroundColor: Colors.green,
       ),
     );
   }

@@ -76,35 +76,100 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
     }
   }
 
+  String getGreeting() {
+    var hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Good morning';
+    } else if (hour < 17) {
+      return 'Good afternoon';
+    } else {
+      return 'Good evening';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mood Tracker'),
+        centerTitle: true,
+        title: Text(
+          'MoodMate',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.green[300],
       ),
+      backgroundColor: Color.fromARGB(255, 254, 231, 192),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(20.0),
-            child: Text(
-              'Good morning $_userName!', //see if we can change the greeting based on time of day
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: '${getGreeting()} ',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  TextSpan(
+                    text: _userName + '!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color.fromARGB(255, 52, 134, 55),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Text(
             'How are you feeling today?',
-            style: TextStyle(fontSize: 18),
+            style: TextStyle(fontSize: 20),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              MoodIcon(Icons.sentiment_very_dissatisfied, 'Very Sad'),
-              MoodIcon(Icons.sentiment_dissatisfied, 'Sad'),
-              MoodIcon(Icons.sentiment_neutral, 'Neutral'),
-              MoodIcon(Icons.sentiment_satisfied, 'Happy'),
-              MoodIcon(Icons.sentiment_very_satisfied, 'Very Happy'),
-            ],
+          SizedBox(height: 10),
+          Container(
+            padding: EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 157, 196, 142).withOpacity(.4),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            // Set the background color here
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                MoodIcon(Icons.sentiment_very_dissatisfied, 'Very Sad',
+                    Color.fromARGB(255, 36, 93, 38)),
+                MoodIcon(Icons.sentiment_dissatisfied, 'Sad',
+                    Color.fromARGB(255, 36, 93, 38)),
+                MoodIcon(Icons.sentiment_neutral, 'Neutral',
+                    Color.fromARGB(255, 36, 93, 38)),
+                MoodIcon(Icons.sentiment_satisfied, 'Happy',
+                    Color.fromARGB(255, 36, 93, 38)),
+                MoodIcon(Icons.sentiment_very_satisfied, 'Very Happy',
+                    Color.fromARGB(255, 36, 93, 38)),
+              ],
+            ),
+          ),
+          SizedBox(height: 20),
+          SizedBox(
+            height: 30,
+            width: double.infinity,
+            child: Container(
+                color: Colors.green[300],
+                child: Center(
+                  child: Text(
+                    'Your Journal Entries',
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                )),
           ),
           Expanded(
             child: ListView.builder(
@@ -129,7 +194,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                       children: [
                         Text(
                           entries[index].body.length > 50
-                              ? '${entries[index].body.substring(0, 50)}...' // Limiting characters to 50
+                              ? '${entries[index].body.substring(0, 50)}...' // limiting characters that show up to 50
                               : entries[index].body,
                           style: TextStyle(fontSize: 16),
                         ),
@@ -166,11 +231,14 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
     );
   }
 
-  Widget MoodIcon(IconData icon, String label) {
+  Widget MoodIcon(IconData icon, String label, Color iconColor) {
     return Column(
       children: <Widget>[
         IconButton(
-          icon: Icon(icon),
+          icon: Icon(
+            icon,
+            color: iconColor, // Set the color here
+          ),
           iconSize: 36,
           onPressed: () {
             Navigator.push(
