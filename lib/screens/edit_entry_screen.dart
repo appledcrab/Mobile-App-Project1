@@ -6,6 +6,8 @@ import '../emoji_icon_class.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path_lib;
 
 class EditEntryScreen extends StatefulWidget {
   final JournalEntry entry;
@@ -23,7 +25,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
   late String _selectedMood;
   late EmojiIcon _moodIcon;
   final dbHelper = DatabaseHelper();
-  late Uint8List? _imageData; // Nullable Uint8List for storing image data
+  File? _imageFile; // Nullable Uint8List for storing image data
 
   @override
   void initState() {
@@ -33,7 +35,9 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     _textEditingController = TextEditingController(text: widget.entry.body);
     _selectedMood = widget.entry.moodLabel;
     _moodIcon = EmojiIcon(label: _selectedMood);
-    _imageData = widget.entry.imageData;
+    if (widget.entry.imageData?.isNotEmpty ?? false) {
+      _imageFile = File(widget.entry.imageData!);
+    }
   }
 
   @override
@@ -130,7 +134,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                         time: _formattedTime,
                         body: enteredText,
                         moodLabel: _selectedMood,
-                        imageData: _imageData, // Assign image data
+                        imageData: _imageFile?.path, // Assign image data
                       );
                       await dbHelper.updateEntry(updatedEntry);
                       Navigator.pop(context);
@@ -206,9 +210,9 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
   }
 
   Widget _buildImageWidget() {
-    if (_imageData != null) {
-      return Image.memory(
-        _imageData!,
+    if (_imageFile != null) {
+      return Image.file(
+        _imageFile!,
         fit: BoxFit.cover,
       );
     } else {
@@ -217,12 +221,16 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
   }
 
   Future<void> _getImage() async {
-    final pickedFile = await ImagePicker()
-        .pickImage(source: ImageSource.gallery); // Pick image from gallery
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
     if (pickedFile != null) {
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = path_lib.basename(pickedFile.path);
+      final savedImage = await File(pickedFile.path).copy('${appDir.path}/$fileName');
+
       setState(() {
-        _imageData = File(pickedFile.path)
-            .readAsBytesSync(); // Set the selected image file
+        _imageFile = savedImage;
       });
     }
   }

@@ -7,7 +7,7 @@ class JournalEntry {
   //these arent final because they should be able to be changed
   String body;
   String moodLabel; // Store the mood label instead of EmojiIcon
-  Uint8List? imageData; // Nullable Uint8List for storing image data
+  String? imageData; // Nullable Uint8List for storing image data
 
   JournalEntry({
     this.id,
@@ -27,5 +27,15 @@ class JournalEntry {
       'moodLabel': moodLabel,
       'imageData': imageData,
     };
+  }
+  factory JournalEntry.fromMap(Map<String, dynamic> map) {
+    return JournalEntry(
+      id: map['id'],
+      date: map['date'],
+      time: map['time'],
+      body: map['body'],
+      moodLabel: map['moodLabel'],
+      imageData: map['imageData'], // This is the image path
+    );
   }
 }

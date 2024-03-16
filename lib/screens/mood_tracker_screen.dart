@@ -3,7 +3,7 @@ import 'package:mad_project1/emoji_icon_class.dart';
 import '../entry_class.dart';
 import 'package:intl/intl.dart';
 import '../emoji_icon_class.dart';
-
+import 'dart:io';
 import '../database_helper.dart';
 import 'journal_entry_screen.dart';
 import 'edit_entry_screen.dart';
@@ -18,7 +18,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   List<JournalEntry> entries = [];
   DatabaseHelper dbHelper = DatabaseHelper();
   late SharedPreferences _prefs;
-  late String _userName;
+  late String _userName = '';
 
   @override
   void initState() {
@@ -37,42 +37,75 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
 
   Future<void> _initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
-    _userName = _prefs.getString('userName') ?? '';
-    if (_userName.isEmpty) {
-      _showNameDialog();
+    String userName = _prefs.getString('userName') ?? '';
+    if (userName.isEmpty) {
+      await _showNameDialog();
+    } else {
+      setState(() {
+        _userName = userName;
+      });
     }
   }
 
-  Future<void> _showNameDialog() async {
-    String? newName = await showDialog(
+Future<void> _showNameDialog() async {
+    TextEditingController _nameController = TextEditingController();
+    String? newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Enter your name'),
         content: TextField(
-          onChanged: (value) {
-            setState(() {
-              _userName = value;
-            });
-          },
+          controller: _nameController,
+          decoration: InputDecoration(hintText: "Your name"),
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, _nameController.text),
+            child: Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (newName != null && newName.isNotEmpty) {
+      setState(() {
+        _userName = newName;
+      });
+      await _prefs.setString('userName', newName);
+    }
+  }
+
+  Future<void> _showEditNameDialog() async {
+    TextEditingController _nameController = TextEditingController(text: _userName);
+    String? newName = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit your name'),
+        content: TextField(
+          controller: _nameController,
+          decoration: InputDecoration(hintText: "Your name"),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context),
             child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context, _userName);
+              Navigator.pop(context, _nameController.text);
             },
             child: Text('Save'),
           ),
         ],
       ),
     );
-    if (newName != null) {
-      _prefs.setString('userName', newName);
+    if (newName != null && newName.isNotEmpty) {
+      setState(() {
+        _userName = newName;
+      });
+      await _prefs.setString('userName', newName);
     }
   }
 
@@ -99,8 +132,17 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
           ),
         ),
         backgroundColor: Colors.green[300],
+        actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.edit),
+          onPressed: () {
+            _showEditNameDialog();
+        },
+      ),
+    ],
       ),
       backgroundColor: Color.fromARGB(255, 254, 231, 192),
+
       body: Column(
         children: [
           Padding(
@@ -199,8 +241,8 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                           style: TextStyle(fontSize: 16),
                         ),
                         if (entries[index].imageData != null)
-                          Image.memory(
-                            entries[index].imageData!,
+                          Image.file(
+                           File(entries[index].imageData!),
                             width: 100,
                             height: 100,
                             fit: BoxFit.cover,

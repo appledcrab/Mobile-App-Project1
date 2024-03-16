@@ -5,6 +5,8 @@ import 'dart:io';
 import '../database_helper.dart';
 import '../entry_class.dart';
 import '../emoji_icon_class.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class JournalEntryScreen extends StatefulWidget {
   final String selectedMood;
@@ -22,7 +24,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
   TextEditingController _textEditingController = TextEditingController();
   late String _selectedMood;
   late EmojiIcon moodIcon;
-  File? _image; // Variable to store the selected image
+  File? _imageFile; // Variable to store the selected image
 
   @override
   void initState() {
@@ -44,7 +46,6 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
         title: Text('New Journal Entry'),
         backgroundColor: Colors.green[300],
       ),
-      backgroundColor: Color.fromARGB(255, 254, 231, 192),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -82,10 +83,12 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                 ],
               ),
               SizedBox(height: 20),
-              Container(
-                height: 200, // Specify a fixed height for the text entry box
-                child: ListView(
+              SizedBox(
+                height: 100,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    SizedBox(height: 10),
                     Container(
                       width: double.infinity,
                       constraints: BoxConstraints(
@@ -103,12 +106,12 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 20), // Add space between text field and button
               Center(
                 child: Column(
                   children: [
-                    if (_image != null)
-                      Image.file(_image!), // Display the selected image
+                    if (_imageFile != null)
+                      Image.file(_imageFile!), // Display the selected image
                     ElevatedButton(
                       onPressed: _getImage,
                       child: Text('Pick Image'),
@@ -127,12 +130,11 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                       JournalEntry entry = JournalEntry(
                         date: _formattedDate,
                         time: _formattedTime,
-                        body: enteredText,
+                        body: _textEditingController.text,
                         moodLabel: _selectedMood,
-                        imageData:
-                            _image != null ? await _image!.readAsBytes() : null,
+                        imageData: _imageFile?.path, // Use the path of the saved image
                       );
-                      dbHelper.insertEntry(entry);
+                      await dbHelper.insertEntry(entry);
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
@@ -152,6 +154,11 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: Icon(Icons.add),
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -199,11 +206,19 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
 
   // Method to pick an image from the device
   Future<void> _getImage() async {
-    final pickedFile = await ImagePicker()
-        .pickImage(source: ImageSource.gallery); // Pick image from gallery
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
     if (pickedFile != null) {
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = path.basename(pickedFile.path);
+      final savedImage = await File(pickedFile.path).copy('${appDir.path}/$fileName');
+
       setState(() {
-        _image = File(pickedFile.path); // Set the selected image file
+        // Assuming _imageFile is a File variable in your state
+        _imageFile = savedImage;
+        // Store the image path in your JournalEntry object later
+        // _imageData = savedImage.path; // Adjust according to your actual variable names
       });
     }
   }

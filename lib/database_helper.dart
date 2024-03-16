@@ -30,7 +30,7 @@ class DatabaseHelper {
         time TEXT,
         body TEXT,
         moodLabel TEXT,
-        imageData BLOB
+        imageData TEXT
       )
     ''');
   }
