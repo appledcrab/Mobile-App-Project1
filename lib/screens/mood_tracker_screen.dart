@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mad_project1/emoji_icon_class.dart';
+import 'package:MoodMate/emoji_icon_class.dart';
 import '../entry_class.dart';
-import 'package:intl/intl.dart';
-import '../emoji_icon_class.dart';
 import 'dart:io';
 import '../database_helper.dart';
 import 'journal_entry_screen.dart';

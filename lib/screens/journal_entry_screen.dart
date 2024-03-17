@@ -126,7 +126,6 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () async {
-                      String enteredText = _textEditingController.text;
                       JournalEntry entry = JournalEntry(
                         date: _formattedDate,
                         time: _formattedTime,
@@ -213,12 +212,8 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = path.basename(pickedFile.path);
       final savedImage = await File(pickedFile.path).copy('${appDir.path}/$fileName');
-
       setState(() {
-        // Assuming _imageFile is a File variable in your state
         _imageFile = savedImage;
-        // Store the image path in your JournalEntry object later
-        // _imageData = savedImage.path; // Adjust according to your actual variable names
       });
     }
   }
