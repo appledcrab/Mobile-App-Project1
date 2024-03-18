@@ -95,7 +95,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                           maxWidth: MediaQuery.of(context).size.width),
                       child: TextField(
                         controller: _textEditingController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           hintText: 'Start typing...',
                           border: OutlineInputBorder(),
                         ),
